@@ -1,11 +1,13 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 const app = express();
 const connectDatabase = require("./config/database");
 
 // import routes
 const products = require("./routes/product");
+const auth = require("./routes/auth");
 
 //import error middleware
 const errorMiddleware = require("./middleware/errors");
@@ -24,8 +26,10 @@ connectDatabase();
 
 // middleware
 app.use(express.json());
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/api/v1", products);
+app.use("/api/v1", auth);
 app.use(errorMiddleware);
 
 const server = app.listen(process.env.PORT, () => {

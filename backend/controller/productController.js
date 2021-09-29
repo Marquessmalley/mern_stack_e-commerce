@@ -5,6 +5,7 @@ const APIFeatures = require("../utills/apiFeatures");
 
 // create new product  =>  /api/v1/admin/product/new
 exports.newProduct = catchAysncErrors(async (req, res, next) => {
+  req.body.user = req.user.id;
   const product = await Product.create(req.body);
 
   res.status(200).json({
@@ -15,19 +16,25 @@ exports.newProduct = catchAysncErrors(async (req, res, next) => {
 
 // getting all products  =>  /api/v1/products?keyword=apple
 module.exports.getProducts = catchAysncErrors(async (req, res, next) => {
-  const apiFeatures = new APIFeatures(Product.find(), req.query).search();
+  const resPerPage = 5;
+  const productCount = await Product.countDocuments();
+
+  const apiFeatures = new APIFeatures(Product.find(), req.query)
+    .search()
+    .filter()
+    .pagination(resPerPage);
 
   const products = await apiFeatures.query;
 
   res.status(200).json({
     success: true,
     count: products.length,
+    productCount,
     products,
   });
 });
 
 // getting single product details  => /api/v1/product/:id
-
 module.exports.getSingleProduct = catchAysncErrors(async (req, res, next) => {
   const product = await Product.findById(req.params.id);
 
@@ -36,7 +43,6 @@ module.exports.getSingleProduct = catchAysncErrors(async (req, res, next) => {
   }
 
   res.status(200).json({ success: true, product });
-  console.log("sent");
 });
 
 // Update product  => /api/v1/admin/product/:id
